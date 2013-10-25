@@ -31,13 +31,12 @@ robot.emit "plus-one", {
 ## Installation
 
 Add the package `hubot-plusplus` as a dependency in your Hubot `package.json`
-file.  Also add the dependencies `underscore` and `clark`.
+file.
 
 ```
 "dependencies": {
-  "hubot-plusplus": "1.0.x",
-  "underscore": ">= 1.0.0",
-  "clark": "0.0.6",
+  "hubot": "*",
+  "hubot-plusplus": "1.0.x"
 }
 ```
 
