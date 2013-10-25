@@ -1,5 +1,5 @@
-plusplus
-========
+hubot-plusplus
+==============
 
 Give (or take away) points from people and things, all from the comfort of your
 personal Hubot.
@@ -30,12 +30,12 @@ robot.emit "plus-one", {
 
 ## Installation
 
-Add the package `plusplus` as a dependency in your Hubot `package.json` file.
-Also add the dependencies `underscore` and `clark`.
+Add the package `hubot-plusplus` as a dependency in your Hubot `package.json`
+file.  Also add the dependencies `underscore` and `clark`.
 
 ```
 "dependencies": {
-  "plusplus": "1.0.x",
+  "hubot-plusplus": "1.0.x",
   "underscore": ">= 1.0.0",
   "clark": "0.0.6",
 }
@@ -48,5 +48,5 @@ Run the following command to make sure the module is installed.
 To enable the script, add the `plusplus` entry to the `external-scripts.json`
 file (you may need to create this file).
 
-    ["plusplus"]
+    ["hubot-plusplus"]
 
