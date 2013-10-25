@@ -28,7 +28,7 @@ module.exports = (robot) ->
   scoreKeeper = new ScoreKeeper(robot)
 
   # sweet regex bro
-  robot.hear /^([\w\s']+)?(?:[\W\S]*)?(\+\+|\-\-)(?: (?:for|because|cause|cuz) (.+))?$/i, (msg) ->
+  robot.hear /^([\w\S']+)?(?:[\W\s]*)?(\+\+|\-\-)(?: (?:for|because|cause|cuz) (.+))?$/i, (msg) ->
     # let's get our local vars in place
     [__, name, operator, reason] = msg.match
     from = msg.message.user.name.toLowerCase()
@@ -81,7 +81,7 @@ module.exports = (robot) ->
     msg.send reasonString
 
   robot.respond /(top|bottom) (\d+)/i, (msg) ->
-    amount = parseInt(msg.match[2])
+    amount = parseInt(msg.match[2]) || 10
     message = []
 
     tops = scoreKeeper[msg.match[1]](amount)
