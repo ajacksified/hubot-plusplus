@@ -1,0 +1,35 @@
+{
+  "name": "plusplus",
+  "version": "1.0.0",
+  "description": "A hubot script for adding or removing points",
+  "main": "index.coffee",
+  "scripts": {
+    "test": "mocha --compilers coffee:coffee-script --recursive ./test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ajacksified/plusplus.git"
+  },
+  "keywords": [
+    "hubot",
+    "points",
+    "plus",
+    "karma"
+  ],
+  "author": "Jack Lawson <https://github.com/ajacksified>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ajacksified/plusplus/issues"
+  },
+  "dependencies": {
+    "coffee-script": "~1.6",
+    "underscore": ">= 1.0",
+    "clark": "0.0.6"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "chai": "*",
+    "sinon-chai": "*",
+    "sinon": "*"
+  }
+}
