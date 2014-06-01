@@ -30,22 +30,15 @@ robot.emit "plus-one", {
 
 ## Installation
 
-Add the package `hubot-plusplus` as a dependency in your Hubot `package.json`
-file.
+Run the following command 
 
-```
-"dependencies": {
-  "hubot": "*",
-  "hubot-plusplus": "1.0.x"
-}
-```
+    $ npm install hubot-plusplus
 
-Run the following command to make sure the module is installed.
+Then to make sure the dependencies are installed:
 
     $ npm install
 
-To enable the script, add the `plusplus` entry to the `external-scripts.json`
+To enable the script, add a `hubot-plusplus` entry to the `external-scripts.json`
 file (you may need to create this file).
 
     ["hubot-plusplus"]
-

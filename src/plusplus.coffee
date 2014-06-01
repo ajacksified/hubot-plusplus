@@ -28,7 +28,7 @@ module.exports = (robot) ->
   scoreKeeper = new ScoreKeeper(robot)
 
   # sweet regex bro
-  robot.hear /^([\w\S']+)?(?:[\W\s]*)?(\+\+|\-\-|—)(?: (?:for|because|cause|cuz) (.+))?$/i, (msg) ->
+  robot.hear /^([\w\S']+)?(?:[\W\s]*)?([-+]{2}|—)(?: (?:for|because|cause|cuz) (.+))?$/i, (msg) ->
     # let's get our local vars in place
     [__, name, operator, reason] = msg.match
     from = msg.message.user.name.toLowerCase()
@@ -121,4 +121,3 @@ module.exports = (robot) ->
       tops = scoreKeeper[direction](amount)
 
       res.end JSON.stringify(tops)
-
