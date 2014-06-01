@@ -28,7 +28,16 @@ module.exports = (robot) ->
   scoreKeeper = new ScoreKeeper(robot)
 
   # sweet regex bro
-  robot.hear /^([\w\S']+)?(?:[\W\s]*)?([-+]{2}|—)(?: (?:for|because|cause|cuz) (.+))?$/i, (msg) ->
+  robot.hear ///
+    # from beginning of line, any contiguous block of word characters, including
+    # apostrophes (entire block is optional)
+    ^([\w\S']+)?
+    # any contiguous block of word phrases (optional)
+    (?:[\W\s]*)?
+    ([-+]{2}|—) # the increment/decrement operator (++ or --)
+    (?: (?:for|because|cause|cuz) (.+))? # optional reason for the plusplus
+    $ # end of line
+  ///i, (msg) ->
     # let's get our local vars in place
     [__, name, operator, reason] = msg.match
     from = msg.message.user.name.toLowerCase()
