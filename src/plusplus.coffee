@@ -45,7 +45,7 @@ module.exports = (robot) ->
 
     # do some sanitizing
     reason = reason?.trim().toLowerCase()
-    name = (name?.replace /^.*@/g, "").trim().toLowerCase()
+    name = (name?.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase()
 
     # check whether a name was specified. use MRU if not
     unless name?
