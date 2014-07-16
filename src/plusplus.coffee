@@ -34,8 +34,9 @@ module.exports = (robot) ->
     ^([\w\S']+)?
     # any contiguous block of word phrases (optional)
     (?:[\W\s]*)?
-    ([-+]{2}|—) # the increment/decrement operator (++ or --)
-    (?: (?:for|because|cause|cuz) (.+))? # optional reason for the plusplus
+    # the increment/decrement operator ++ or --
+    ([-+]{2}|—)
+    (?:\s+(?:for|because|cause|cuz)\s+(.+))? # optional reason for the plusplus
     $ # end of line
   ///i, (msg) ->
     # let's get our local vars in place
