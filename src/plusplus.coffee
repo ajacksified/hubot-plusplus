@@ -49,7 +49,7 @@ module.exports = (robot) ->
 
     # check whether a name was specified. use MRU if not
     unless name?
-      [name, lastReason] = scoreKeeper.mostRecentlyUpdated(room)
+      [name, lastReason] = scoreKeeper.last(room)
       reason = lastReason if !reason? && lastReason?
 
     # do the {up, down}vote, and figure out what the new score is
