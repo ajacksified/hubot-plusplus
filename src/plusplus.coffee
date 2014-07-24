@@ -34,8 +34,9 @@ module.exports = (robot) ->
     ^([\w\S']+)?
     # any contiguous block of word phrases (optional)
     (?:[\W\s]*)?
-    ([-+]{2}|—) # the increment/decrement operator (++ or --)
-    (?: (?:for|because|cause|cuz) (.+))? # optional reason for the plusplus
+    # the increment/decrement operator ++ or --
+    ([-+]{2}|—)
+    (?:\s+(?:for|because|cause|cuz)\s+(.+))? # optional reason for the plusplus
     $ # end of line
   ///i, (msg) ->
     # let's get our local vars in place
@@ -45,7 +46,7 @@ module.exports = (robot) ->
 
     # do some sanitizing
     reason = reason?.trim().toLowerCase()
-    name = (name?.replace /^.*@/g, "").trim().toLowerCase()
+    name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase() if name
 
     # check whether a name was specified. use MRU if not
     unless name?
