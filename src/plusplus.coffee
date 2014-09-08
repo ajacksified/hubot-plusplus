@@ -29,18 +29,18 @@ module.exports = (robot) ->
 
   # sweet regex bro
   robot.hear ///
-    # from beginning of line, any contiguous block of word characters, including
-    # apostrophes (entire block is optional)
-    ^([\w\S']+)?
-    # any contiguous block of word phrases (optional)
-    (?:[\W\s]*)?
+    # from beginning of line
+    ^
+    # the thing being upvoted, which is any number of words and spaces
+    ([\s\w']*)
     # the increment/decrement operator ++ or --
     ([-+]{2}|—)
-    (?:\s+(?:for|because|cause|cuz)\s+(.+))? # optional reason for the plusplus
+    # optional reason for the plusplus
+    (?:\s+(?:for|because|cause|cuz)\s+(.+))?
     $ # end of line
   ///i, (msg) ->
     # let's get our local vars in place
-    [__, name, operator, reason] = msg.match
+    [name, operator, reason] = msg.match
     from = msg.message.user.name.toLowerCase()
     room = msg.message.room
 
