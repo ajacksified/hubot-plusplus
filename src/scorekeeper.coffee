@@ -1,16 +1,26 @@
+# Description:
+#   Helper class responsible for storing scores
+#
+# Dependencies:
+#
+# Configuration:
+#
+# Commands:
+#
+# Author:
+#   ajacksified
 class ScoreKeeper
   constructor: (@robot) ->
-    @robot.brain.on 'loaded', =>
-      @storage = robot.brain.data.plusPlus ||= {
-        scores: {}
-        log: {}
-        reasons: {}
-        last: {}
-      }
-      if typeof @storage.last == "string"
-        @storage.last = {}
+    @storage = robot.brain.data.plusPlus ||= {
+      scores: {}
+      log: {}
+      reasons: {}
+      last: {}
+    }
+    if typeof @storage.last == "string"
+      @storage.last = {}
 
-      robot.logger.debug "Plus Plus Data Loaded: " + JSON.stringify(@storage, null, 2)
+    robot.logger.debug "Plus Plus Data Loaded: " + JSON.stringify(@storage, null, 2)
 
   getUser: (user) ->
     @storage.scores[user] ||= 0
