@@ -12,7 +12,7 @@ API
 * `thing++ for stuff` - keep track of why you gave thing points
 * `thing--` - remove a point from `thing`
 * `--` - remove a point from the most previously voted-on thing
-* `thing-- for stuff` - keep track of why you gave thing points
+* `thing-- for stuff` - keep track of why you removed thing points
 * `hubot top 10` - show the top 10, with a graph of points
 * `hubot score thing` - check the score for and reasons for `thing`
 
