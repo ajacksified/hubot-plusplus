@@ -40,7 +40,7 @@ module.exports = (robot) ->
     $ # end of line
   ///i, (msg) ->
     # let's get our local vars in place
-    [_, name, operator, reason] = msg.match
+    [dummy, name, operator, reason] = msg.match
     from = msg.message.user.name.toLowerCase()
     room = msg.message.room
 
