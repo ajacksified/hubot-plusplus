@@ -11,16 +11,20 @@
 #   ajacksified
 class ScoreKeeper
   constructor: (@robot) ->
-    @storage = robot.brain.data.plusPlus ||= {
-      scores: {}
-      log: {}
-      reasons: {}
-      last: {}
-    }
-    if typeof @storage.last == "string"
-      @storage.last = {}
+    storageLoaded = =>
+      @storage = robot.brain.data.plusPlus ||= {
+        scores: {}
+        log: {}
+        reasons: {}
+        last: {}
+      }
+      if typeof @storage.last == "string"
+        @storage.last = {}
 
-    robot.logger.debug "Plus Plus Data Loaded: " + JSON.stringify(@storage, null, 2)
+      robot.logger.debug "Plus Plus Data Loaded: " + JSON.stringify(@storage, null, 2)
+    robot.brain.on "loaded", storageLoaded
+    storageLoaded() # just in case storage was loaded before we got here
+
 
   getUser: (user) ->
     @storage.scores[user] ||= 0

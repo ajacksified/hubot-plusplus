@@ -40,7 +40,7 @@ module.exports = (robot) ->
     $ # end of line
   ///i, (msg) ->
     # let's get our local vars in place
-    [_, name, operator, reason] = msg.match
+    [dummy, name, operator, reason] = msg.match
     from = msg.message.user.name.toLowerCase()
     room = msg.message.room
 
@@ -96,8 +96,11 @@ module.exports = (robot) ->
 
     tops = scoreKeeper[msg.match[1]](amount)
 
-    for i in [0..tops.length-1]
-      message.push("#{i+1}. #{tops[i].name} : #{tops[i].score}")
+    if tops.length > 0
+      for i in [0..tops.length-1]
+        message.push("#{i+1}. #{tops[i].name} : #{tops[i].score}")
+    else
+      message.push("No scores to keep track of yet!")
 
     if(msg.match[1] == "top")
       graphSize = Math.min(tops.length, Math.min(amount, 20))
