@@ -108,7 +108,7 @@ module.exports = (robot) ->
 
     msg.send message.join("\n")
 
-  robot.router.get "/hubot/normalize-points", (req, res) ->
+  robot.router.get "/#{robot.name}/normalize-points", (req, res) ->
     scoreKeeper.normalize((score) ->
       if score > 0
         score = score - Math.ceil(score / 10)
@@ -120,7 +120,7 @@ module.exports = (robot) ->
 
     res.end JSON.stringify('done')
 
-  robot.router.get "/hubot/scores", (req, res) ->
+  robot.router.get "/#{robot.name}/scores", (req, res) ->
     query = querystring.parse(req._parsedUrl.query)
 
     if query.name
@@ -133,4 +133,4 @@ module.exports = (robot) ->
 
       tops = scoreKeeper[direction](amount)
 
-      res.end JSON.stringify(tops)
+      res.end JSON.stringify(tops, null, 2)
