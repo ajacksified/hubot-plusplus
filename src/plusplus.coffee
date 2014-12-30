@@ -13,6 +13,7 @@
 #   hubot score <name> [for <reason>]
 #   hubot top <amount>
 #   hubot bottom <amount>
+#   hubot erase <user> [<reason>]
 #   GET http://<url>/hubot/scores[?name=<name>][&direction=<top|botton>][&limit=<10>]
 #
 # Author:
@@ -74,6 +75,35 @@ module.exports = (robot) ->
         room: room
         reason: reason
       }
+
+  robot.respond ///
+    (?:erase )
+    # thing to be erased
+    ([\s\w'@.-]+?)
+    # optionally erase a reason from thing
+    (?:\s+(?:for|because|cause|cuz)\s+(.+))?
+    $ # eol
+  ///i, (msg) ->
+    [__, name, reason] = msg.match
+    from = msg.message.user.name.toLowerCase()
+    user = msg.envelope.user
+    room = msg.message.room
+    reason = reason?.trim().toLowerCase()
+    name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase() if name
+
+    isAdmin = @robot.auth?.hasRole(user, 'plusplus-admin') or @robot.auth?.hasRole(user, 'admin')
+
+    if not @robot.auth? or isAdmin
+      erased = scoreKeeper.erase(name, from, room, reason)
+    else
+      return msg.reply "Sorry, you don't have authorization to do that."
+
+    if erased?
+      message = if reason?
+                  "Erased the following reason from #{name}: #{reason}"
+                else
+                  "Erased points for #{name}"
+      msg.send message
 
   robot.respond /score (for\s)?(.*)/i, (msg) ->
     name = msg.match[2].trim().toLowerCase()
