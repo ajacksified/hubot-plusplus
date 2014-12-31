@@ -12,7 +12,7 @@
 class ScoreKeeper
   constructor: (@robot) ->
     storageLoaded = =>
-      @storage = robot.brain.data.plusPlus ||= {
+      @storage = @robot.brain.data.plusPlus ||= {
         scores: {}
         log: {}
         reasons: {}
@@ -21,13 +21,14 @@ class ScoreKeeper
       if typeof @storage.last == "string"
         @storage.last = {}
 
-      robot.logger.debug "Plus Plus Data Loaded: " + JSON.stringify(@storage, null, 2)
-    robot.brain.on "loaded", storageLoaded
+      @robot.logger.debug "Plus Plus Data Loaded: " + JSON.stringify(@storage, null, 2)
+    @robot.brain.on "loaded", storageLoaded
     storageLoaded() # just in case storage was loaded before we got here
 
 
   getUser: (user) ->
     @storage.scores[user] ||= 0
+    @storage.reasons[user] ||= {}
     user
 
   saveUser: (user, from, room, reason) ->
@@ -64,6 +65,20 @@ class ScoreKeeper
     else
       [null, null]
 
+  erase: (user, from, room, reason) ->
+    user = @getUser(user)
+
+    if reason
+      delete @storage.reasons[user][reason]
+      @saveUser(user, from.name, room)
+      return true
+    else
+      delete @storage.scores[user]
+      delete @storage.reasons[user]
+      return true
+
+    false
+
   scoreForUser: (user) ->
     user = @getUser(user)
     @storage.scores[user]
@@ -95,7 +110,7 @@ class ScoreKeeper
     dateSubmitted = @storage.log[from][user]
 
     date = new Date(dateSubmitted)
-    messageIsSpam = date.setSeconds(date.getSeconds() + 30) > new Date()
+    messageIsSpam = date.setSeconds(date.getSeconds() + 5) > new Date()
 
     if !messageIsSpam
       delete @storage.log[from][user] #clean it up
