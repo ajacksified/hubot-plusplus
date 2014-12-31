@@ -12,7 +12,7 @@
 class ScoreKeeper
   constructor: (@robot) ->
     storageLoaded = =>
-      @storage = robot.brain.data.plusPlus ||= {
+      @storage = @robot.brain.data.plusPlus ||= {
         scores: {}
         log: {}
         reasons: {}
@@ -21,8 +21,8 @@ class ScoreKeeper
       if typeof @storage.last == "string"
         @storage.last = {}
 
-      robot.logger.debug "Plus Plus Data Loaded: " + JSON.stringify(@storage, null, 2)
-    robot.brain.on "loaded", storageLoaded
+      @robot.logger.debug "Plus Plus Data Loaded: " + JSON.stringify(@storage, null, 2)
+    @robot.brain.on "loaded", storageLoaded
     storageLoaded() # just in case storage was loaded before we got here
 
 
