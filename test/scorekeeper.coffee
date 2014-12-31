@@ -62,6 +62,24 @@ describe 'ScoreKeeper', ->
       r = s.subtract('to', 'another-from', 'room', 'because points')
       expect(r).to.deep.equal([-2, -2])
 
+  describe 'erasing', ->
+    it 'erases a reason from a user', ->
+      s = new ScoreKeeper(robotStub)
+      p = s.add('to', 'from', 'room', 'reason')
+      r = s.erase('to', 'from', 'room', 'reason')
+      expect(r).to.deep.equal(true)
+      rs = s.reasonsForUser('to')
+      expect(rs.reason).to.equal(undefined)
+
+    it 'erases a user from the scoreboard', ->
+      s = new ScoreKeeper(robotStub)
+      p = s.add('to', 'from', 'room', 'reason')
+      expect(p).to.deep.equal([1, 1])
+      r = s.erase('to', 'from', 'room')
+      expect(r).to.equal(true)
+      p2 = s.scoreForUser('to')
+      expect(p2).to.equal(0)
+
   describe 'scores', ->
     it 'returns the score for a user', ->
       s = new ScoreKeeper(robotStub)
