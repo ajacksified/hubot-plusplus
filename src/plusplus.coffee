@@ -28,19 +28,29 @@ module.exports = (robot) ->
   scoreKeeper = new ScoreKeeper(robot)
 
   # sweet regex bro
-  robot.hear /^([\w\S'.\s]+)?(?:[\W\s]*)?(\+\+|\-\-)(?: (?:for|because|cause|cuz) (.+))?$/i, (msg) ->
+  robot.hear ///
+    # from beginning of line
+    ^
+    # the thing being upvoted, which is any number of words and spaces
+    ([\s\w'@.-]*)
+    # the increment/decrement operator ++ or --
+    ([-+]{2}|—)
+    # optional reason for the plusplus
+    (?:\s+(?:for|because|cause|cuz)\s+(.+))?
+    $ # end of line
+  ///i, (msg) ->
     # let's get our local vars in place
-    [__, name, operator, reason] = msg.match
+    [dummy, name, operator, reason] = msg.match
     from = msg.message.user.name.toLowerCase()
     room = msg.message.room
 
     # do some sanitizing
     reason = reason?.trim().toLowerCase()
-    name = name?.trim().toLowerCase()
+    name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase() if name
 
     # check whether a name was specified. use MRU if not
     unless name?
-      [name, lastReason] = scoreKeeper.mostRecentlyUpdated(room)
+      [name, lastReason] = scoreKeeper.last(room)
       reason = lastReason if !reason? && lastReason?
 
     # do the {up, down}vote, and figure out what the new score is
@@ -86,8 +96,11 @@ module.exports = (robot) ->
 
     tops = scoreKeeper[msg.match[1]](amount)
 
-    for i in [0..tops.length-1]
-      message.push("#{i+1}. #{tops[i].name} : #{tops[i].score}")
+    if tops.length > 0
+      for i in [0..tops.length-1]
+        message.push("#{i+1}. #{tops[i].name} : #{tops[i].score}")
+    else
+      message.push("No scores to keep track of yet!")
 
     if(msg.match[1] == "top")
       graphSize = Math.min(tops.length, Math.min(amount, 20))
@@ -121,4 +134,3 @@ module.exports = (robot) ->
       tops = scoreKeeper[direction](amount)
 
       res.end JSON.stringify(tops)
-

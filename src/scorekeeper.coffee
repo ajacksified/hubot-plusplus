@@ -1,54 +1,50 @@
+# Description:
+#   Helper class responsible for storing scores
+#
+# Dependencies:
+#
+# Configuration:
+#
+# Commands:
+#
+# Author:
+#   ajacksified
 class ScoreKeeper
   constructor: (@robot) ->
-    @robot.brain.data.scores ||= {}
-    @robot.brain.data.scoreLog ||= {}
-    @robot.brain.data.scoreReasons || = {}
-    @robot.brain.data.mostRecentlyUpdated ||= {}
+    storageLoaded = =>
+      @storage = robot.brain.data.plusPlus ||= {
+        scores: {}
+        log: {}
+        reasons: {}
+        last: {}
+      }
+      if typeof @storage.last == "string"
+        @storage.last = {}
 
-    @cache =
-      scores: @robot.brain.data.scores
-      scoreLog: @robot.brain.data.scoreLog
-      scoreReasons: @robot.brain.data.scoreReasons
-      mostRecentlyUpdated: @robot.brain.data.mostRecentlyUpdated
-
-    @robot.brain.on 'connected', =>
-      @robot.brain.data.scores ||= {}
-      @robot.brain.data.scoreLog ||= {}
-      @robot.brain.data.scoreReasons ||= {}
-
-      @cache.scores = @robot.brain.data.scores || {}
-      @cache.scoreLog = @robot.brain.data.scoreLog || {}
-      @cache.scoreReasons = @robot.brain.data.scoreReasons || {}
-      @cache.mostRecentlyUpdated = @robot.brain.data.mostRecentlyUpdated || {}
-
-      if typeof @robot.brain.data.mostRecentlyUpdated == "string"
-        @robot.brain.data.mostRecentlyUpdated = {}
-        @cache.mostRecentlyUpdated = @robot.brain.data.mostRecentlyUpdated
+      robot.logger.debug "Plus Plus Data Loaded: " + JSON.stringify(@storage, null, 2)
+    robot.brain.on "loaded", storageLoaded
+    storageLoaded() # just in case storage was loaded before we got here
 
 
   getUser: (user) ->
-    @cache.scores[user] ||= 0
+    @storage.scores[user] ||= 0
     user
 
   saveUser: (user, from, room, reason) ->
     @saveScoreLog(user, from, room, reason)
-    @robot.brain.data.scores[user] = @cache.scores[user]
-    @robot.brain.data.scoreLog[user] = @cache.scoreLog[user]
-    @robot.brain.data.scoreReasons[user] = @cache.scoreReasons[user]
-    @robot.brain.emit('save', @robot.brain.data)
-    @robot.brain.data.mostRecentlyUpdated[room] = @cache.mostRecentlyUpdated[room]
+    @robot.brain.save()
 
-    [@cache.scores[user], @cache.scoreReasons[user][reason] || ""]
+    [@storage.scores[user], @storage.reasons[user][reason] || ""]
 
   add: (user, from, room, reason) ->
     if @validate(user, from)
       user = @getUser(user)
-      @cache.scores[user]++
-      @cache.scoreReasons[user] ||= {}
+      @storage.scores[user]++
+      @storage.reasons[user] ||= {}
 
       if reason
-        @cache.scoreReasons[user][reason] ||= 0
-        @cache.scoreReasons[user][reason]++
+        @storage.reasons[user][reason] ||= 0
+        @storage.reasons[user][reason]++
 
       @saveUser(user, from, room, reason)
     else
@@ -57,12 +53,12 @@ class ScoreKeeper
   subtract: (user, from, room, reason) ->
     if @validate(user, from)
       user = @getUser(user)
-      @cache.scores[user]--
-      @cache.scoreReasons[user] ||= {}
+      @storage.scores[user]--
+      @storage.reasons[user] ||= {}
 
       if reason
-        @cache.scoreReasons[user][reason] ||= 0
-        @cache.scoreReasons[user][reason]--
+        @storage.reasons[user][reason] ||= 0
+        @storage.reasons[user][reason]--
 
       @saveUser(user, from, room, reason)
     else
@@ -70,42 +66,39 @@ class ScoreKeeper
 
   scoreForUser: (user) ->
     user = @getUser(user)
-    @cache.scores[user]
+    @storage.scores[user]
 
   reasonsForUser: (user) ->
     user = @getUser(user)
-    @cache.scoreReasons[user]
+    @storage.reasons[user]
 
   saveScoreLog: (user, from, room, reason) ->
-    unless typeof @cache.scoreLog[from] == "object"
-      @cache.scoreLog[from] = {}
+    unless typeof @storage.log[from] == "object"
+      @storage.log[from] = {}
 
-    @cache.scoreLog[from][user] = new Date()
-    @cache.mostRecentlyUpdated[room] = {user: user, reason: reason}
+    @storage.log[from][user] = new Date()
+    @storage.last[room] = {user: user, reason: reason}
 
-  mostRecentlyUpdated: (room) ->
-    recent = @cache.mostRecentlyUpdated[room]
-    if typeof recent == 'string'
-      [recent, '']
+  last: (room) ->
+    last = @storage.last[room]
+    if typeof last == 'string'
+      [last, '']
     else
-      [recent.user, recent.reason]
+      [last.user, last.reason]
 
   isSpam: (user, from) ->
-    # leaving this forever to display Horace's shame in cheating the system
-    #return false
+    @storage.log[from] ||= {}
 
-    @cache.scoreLog[from] ||= {}
-
-    if !@cache.scoreLog[from][user]
+    if !@storage.log[from][user]
       return false
 
-    dateSubmitted = @cache.scoreLog[from][user]
+    dateSubmitted = @storage.log[from][user]
 
     date = new Date(dateSubmitted)
     messageIsSpam = date.setSeconds(date.getSeconds() + 30) > new Date()
 
     if !messageIsSpam
-      delete @cache.scoreLog[from][user] #clean it up
+      delete @storage.log[from][user] #clean it up
 
     messageIsSpam
 
@@ -113,30 +106,29 @@ class ScoreKeeper
     user != from && user != "" && !@isSpam(user, from)
 
   length: () ->
-    @cache.scoreLog.length
+    @storage.log.length
 
   top: (amount) ->
     tops = []
 
-    for name, score of @cache.scores
+    for name, score of @storage.scores
       tops.push(name: name, score: score)
 
     tops.sort((a,b) -> b.score - a.score).slice(0,amount)
 
   bottom: (amount) ->
-    all = @top(@cache.scores.length)
+    all = @top(@storage.scores.length)
     all.sort((a,b) -> b.score - a.score).reverse().slice(0,amount)
 
   normalize: (fn) ->
     scores = {}
 
-    _.each(@cache.scores, (score, name) ->
+    _.each(@storage.scores, (score, name) ->
       scores[name] = fn(score)
       delete scores[name] if scores[name] == 0
     )
 
-    @cache.scores = scores
-    @robot.brain.data.scores = scores
-    @robot.brain.emit 'save'
+    @storage.scores = scores
+    @robot.brain.save()
 
 module.exports = ScoreKeeper
