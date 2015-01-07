@@ -33,7 +33,7 @@ module.exports = (robot) ->
     # from beginning of line
     ^
     # the thing being upvoted, which is any number of words and spaces
-    ([\s\w'@.-]*)
+    ([\s\w'@.-:]*)
     # the increment/decrement operator ++ or --
     ([-+]{2}|—)
     # optional reason for the plusplus
