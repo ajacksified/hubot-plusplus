@@ -52,7 +52,7 @@ module.exports = (robot) ->
     name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase() if name
 
     # check whether a name was specified. use MRU if not
-    unless name?
+    unless name? && name != ''
       [name, lastReason] = scoreKeeper.last(room)
       reason = lastReason if !reason? && lastReason?
 
