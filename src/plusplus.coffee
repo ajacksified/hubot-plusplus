@@ -76,15 +76,16 @@ module.exports = (robot) ->
                     "#{name} has #{score} point"
                   else
                     "#{name} has #{score} points"
-                  
+
 
       msg.send message
 
       robot.emit "plus-one", {
-        name: name
+        name:      name
         direction: operator
-        room: room
-        reason: reason
+        room:      room
+        reason:    reason
+        from:      from
       }
 
   robot.respond ///
