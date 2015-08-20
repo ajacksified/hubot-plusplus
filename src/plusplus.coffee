@@ -14,7 +14,9 @@
 #   hubot top <amount>
 #   hubot bottom <amount>
 #   hubot erase <user> [<reason>]
-#   GET http://<url>/hubot/scores[?name=<name>][&direction=<top|botton>][&limit=<10>]
+#
+# URLs:
+#   /hubot/scores[?name=<name>][&direction=<top|botton>][&limit=<10>]
 #
 # Author:
 #   ajacksified
