@@ -51,10 +51,15 @@ module.exports = (robot) ->
 
     # do some sanitizing
     reason = reason?.trim().toLowerCase()
-    name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase() if name
+
+    if name
+      if name.charAt(0) == ":"
+        name = (name.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
+      else
+        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
 
     # check whether a name was specified. use MRU if not
-    unless name? && name != ''
+    unless name? && name != ""
       [name, lastReason] = scoreKeeper.last(room)
       reason = lastReason if !reason? && lastReason?
 
@@ -122,7 +127,7 @@ module.exports = (robot) ->
     score = scoreKeeper.scoreForUser(name)
     reasons = scoreKeeper.reasonsForUser(name)
 
-    reasonString = if typeof reasons == 'object' && Object.keys(reasons).length > 0
+    reasonString = if typeof reasons == "object" && Object.keys(reasons).length > 0
                      "#{name} has #{score} points. here are some raisins:" +
                      _.reduce(reasons, (memo, val, key) ->
                        memo += "\n#{key}: #{val} points"
