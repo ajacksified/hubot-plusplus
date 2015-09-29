@@ -51,7 +51,12 @@ module.exports = (robot) ->
 
     # do some sanitizing
     reason = reason?.trim().toLowerCase()
-    name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase() if name
+
+    if name
+      if name.charAt(0) == ":"
+        name = (name.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
+      else
+        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
 
     # check whether a name was specified. use MRU if not
     unless name? && name != ''
@@ -101,7 +106,12 @@ module.exports = (robot) ->
     user = msg.envelope.user
     room = msg.message.room
     reason = reason?.trim().toLowerCase()
-    name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase() if name
+
+    if name
+      if name.charAt(0) == ":"
+        name = (name.replace /(^\s*@)|([,\s]*$)/g, "").trim().toLowerCase()
+      else
+        name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase()
 
     isAdmin = @robot.auth?.hasRole(user, 'plusplus-admin') or @robot.auth?.hasRole(user, 'admin')
 
