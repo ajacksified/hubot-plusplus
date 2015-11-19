@@ -35,7 +35,7 @@ class ScoreKeeper
     @saveScoreLog(user, from, room, reason)
     @robot.brain.save()
 
-    [@storage.scores[user], @storage.reasons[user][reason] || ""]
+    [@storage.scores[user], @storage.reasons[user][reason] || "none"]
 
   add: (user, from, room, reason) ->
     if @validate(user, from)
