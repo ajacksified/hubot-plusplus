@@ -53,7 +53,7 @@ module.exports = (robot) ->
     reason = reason?.trim().toLowerCase()
 
     if name
-      if name.charAt(0) == ":"
+      if name.charAt(0) == ':'
         name = (name.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
       else
         name = (name.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
@@ -108,10 +108,10 @@ module.exports = (robot) ->
     reason = reason?.trim().toLowerCase()
 
     if name
-      if name.charAt(0) == ":"
-        name = (name.replace /(^\s*@)|([,\s]*$)/g, "").trim().toLowerCase()
+      if name.charAt(0) == ':'
+        name = (name.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
       else
-        name = (name.replace /(^\s*@)|([,:\s]*$)/g, "").trim().toLowerCase()
+        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
 
     isAdmin = @robot.auth?.hasRole(user, 'plusplus-admin') or @robot.auth?.hasRole(user, 'admin')
 
@@ -129,6 +129,15 @@ module.exports = (robot) ->
 
   robot.respond /score (for\s)?(.*)/i, (msg) ->
     name = msg.match[2].trim().toLowerCase()
+
+    if name
+      if name.charAt(0) == ':'
+        name = (name.replace /(^\s*@)|([,\s]*$)/g, '')
+      else
+        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '')
+
+    console.log(name)
+
     score = scoreKeeper.scoreForUser(name)
     reasons = scoreKeeper.reasonsForUser(name)
 
