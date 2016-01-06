@@ -41,7 +41,7 @@ module.exports = (robot) ->
     # the increment/decrement operator ++ or --
     (\+\+|--|—)
     # optional reason for the plusplus
-    (?:\s+(?:for|because|cause|cuz)\s+(.+))?
+    (?:\s+(?:for|because|cause|cuz|as)\s+(.+))?
     $ # end of line
   ///i, (msg) ->
     # let's get our local vars in place
