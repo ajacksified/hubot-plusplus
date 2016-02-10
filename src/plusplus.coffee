@@ -8,8 +8,8 @@
 # Configuration:
 #
 # Commands:
-#   <name>++ - increment score for a name
-#   <name>-- - decrement score for a name
+#   <name>++ increment score for a name
+#   <name>-- decrement score for a name
 #   hubot score <name> [for <reason>]
 #   hubot top <amount>
 #   hubot bottom <amount>
