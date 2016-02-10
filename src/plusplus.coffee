@@ -8,12 +8,12 @@
 # Configuration:
 #
 # Commands:
-#   <name>++
-#   <name>--
+#   <name>++ - increment score for a name
+#   <name>-- - decrement score for a name
 #   hubot score <name> [for <reason>]
 #   hubot top <amount>
 #   hubot bottom <amount>
-#   hubot erase <user> [<reason>]
+#   hubot erase <name> [<reason>]
 #
 # URLs:
 #   /hubot/scores[?name=<name>][&direction=<top|botton>][&limit=<10>]
