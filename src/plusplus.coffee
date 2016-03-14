@@ -6,11 +6,16 @@
 #   "clark": "0.0.6"
 #
 # Configuration:
+#   HUBOT_PLUSPLUS_KEYWORD: the keyword that will make hubot give the
+#   score for a name and the reasons. For example you can set this to
+#   "score|karma" so hubot will answer to both keywords.
+#   If not provided will default to 'score'.
 #
 # Commands:
 #   <name>++ [<reason>] - Increment score for a name (for a reason)
 #   <name>-- [<reason>] - Decrement score for a name (for a reason)
 #   hubot score <name> - Display the score for a name and some of the reasons
+#     Can be configured with the enviroment variable above HUBOT_PLUSPLUS_KEYWORD.
 #   hubot top <amount> - Display the top scoring <amount>
 #   hubot bottom <amount> - Display the bottom scoring <amount>
 #   hubot erase <name> [<reason>] - Remove the score for a name (for a reason)
@@ -29,6 +34,7 @@ ScoreKeeper = require('./scorekeeper')
 
 module.exports = (robot) ->
   scoreKeeper = new ScoreKeeper(robot)
+  scoreKeyword   = process.env.HUBOT_PLUSPLUS_KEYWORD or 'score'
 
   # sweet regex bro
   robot.hear ///
@@ -127,7 +133,8 @@ module.exports = (robot) ->
                   "Erased points for #{name}"
       msg.send message
 
-  robot.respond /score (for\s)?(.*)/i, (msg) ->
+  # Catch the message asking for the score.
+  robot.respond new RegExp("(?:" + scoreKeyword + ") (for\s)?(.*)", "i"), (msg) ->
     name = msg.match[2].trim().toLowerCase()
 
     if name
