@@ -149,7 +149,7 @@ module.exports = (robot) ->
     reasons = scoreKeeper.reasonsForUser(name)
 
     reasonString = if typeof reasons == 'object' && Object.keys(reasons).length > 0
-                     "#{name} has #{score} points. here are some raisins:" +
+                     "#{name} has #{score} points. Here are some reasons:" +
                      _.reduce(reasons, (memo, val, key) ->
                        memo += "\n#{key}: #{val} points"
                      , "")
