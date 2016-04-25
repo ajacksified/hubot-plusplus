@@ -46,3 +46,11 @@ To enable the script, add a `hubot-plusplus` entry to the `external-scripts.json
 file (you may need to create this file).
 
     ["hubot-plusplus"]
+
+## Configuration
+
+Some of the behavior of this plugin is configured in the environment:
+
+`HUBOT_PLUSPLUS_KEYWORD` - alters the word you use to ask for the points, default `score`.
+`HUBOT_PLUSPLUS_REASONS` - the text used for the word "reasons" when hubot lists the top-N report, default `raisins`.
+
