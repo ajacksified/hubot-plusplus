@@ -41,7 +41,7 @@ module.exports = (robot) ->
     # from beginning of line
     ^
     # the thing being upvoted, which is any number of words and spaces
-    ([\s\w'@.\-:]*)
+    ([\s\w'@.\-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]*)
     # allow for spaces after the thing being upvoted (@user ++)
     \s*
     # the increment/decrement operator ++ or --
@@ -105,7 +105,7 @@ module.exports = (robot) ->
   robot.respond ///
     (?:erase )
     # thing to be erased
-    ([\s\w'@.-:]+?)
+    ([\s\w'@.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]*)
     # optionally erase a reason from thing
     (?:\s+(?:for|because|cause|cuz)\s+(.+))?
     $ # eol
