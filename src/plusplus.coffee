@@ -15,7 +15,6 @@
 #   <name>++ [<reason>] - Increment score for a name (for a reason)
 #   <name>-- [<reason>] - Decrement score for a name (for a reason)
 #   hubot score <name> - Display the score for a name and some of the reasons
-#     Can be configured with the enviroment variable above HUBOT_PLUSPLUS_KEYWORD.
 #   hubot top <amount> - Display the top scoring <amount>
 #   hubot bottom <amount> - Display the bottom scoring <amount>
 #   hubot erase <name> [<reason>] - Remove the score for a name (for a reason)
