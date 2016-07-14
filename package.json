@@ -1,6 +1,6 @@
 {
   "name": "hubot-plusplus",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "A hubot script for adding or removing points",
   "main": "index.coffee",
   "scripts": {
