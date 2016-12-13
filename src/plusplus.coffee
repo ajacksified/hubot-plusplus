@@ -11,6 +11,11 @@
 #   "score|karma" so hubot will answer to both keywords.
 #   If not provided will default to 'score'.
 #
+#   HUBOT_PLUSPLUS_REASON_CONJUNCTIONS: a pipe separated list of conjuntions to
+#   be used when specifying reasons. The default value is
+#   "for|because|cause|cuz|as", so it can be used like:
+#   "foo++ for being awesome" or "foo++ cuz they are awesome".
+#
 # Commands:
 #   <name>++ [<reason>] - Increment score for a name (for a reason)
 #   <name>-- [<reason>] - Decrement score for a name (for a reason)
@@ -35,6 +40,7 @@ module.exports = (robot) ->
   scoreKeeper = new ScoreKeeper(robot)
   scoreKeyword   = process.env.HUBOT_PLUSPLUS_KEYWORD or 'score'
   reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS or 'raisins'
+  reasonConjunctions = process.env.HUBOT_PLUSPLUS_CONJUNCTIONS or 'for|because|cause|cuz|as'
 
   # sweet regex bro
   robot.hear ///
@@ -47,7 +53,7 @@ module.exports = (robot) ->
     # the increment/decrement operator ++ or --
     (\+\+|--|—)
     # optional reason for the plusplus
-    (?:\s+(?:for|because|cause|cuz|as)\s+(.+))?
+    (?:\s+(?:#{reasonConjunctions})\s+(.+))?
     $ # end of line
   ///i, (msg) ->
     # let's get our local vars in place
