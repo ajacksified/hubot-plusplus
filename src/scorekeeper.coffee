@@ -27,25 +27,25 @@ class ScoreKeeper
 
 
   getUser: (user) ->
-    @storage.scores[user] ||= 0
-    @storage.reasons[user] ||= {}
+    @storage.scores[user.toLowerCase()] ||= 0
+    @storage.reasons[user.toLowerCase()] ||= {}
     user
 
   saveUser: (user, from, room, reason) ->
     @saveScoreLog(user, from, room, reason)
     @robot.brain.save()
 
-    [@storage.scores[user], @storage.reasons[user][reason] || "none"]
+    [@storage.scores[user.toLowerCase()], @storage.reasons[user.toLowerCase()][reason?.toLowerCase()] || "none"]
 
   add: (user, from, room, reason) ->
     if @validate(user, from)
       user = @getUser(user)
-      @storage.scores[user]++
-      @storage.reasons[user] ||= {}
+      @storage.scores[user.toLowerCase()]++
+      @storage.reasons[user.toLowerCase()] ||= {}
 
       if reason
-        @storage.reasons[user][reason] ||= 0
-        @storage.reasons[user][reason]++
+        @storage.reasons[user.toLowerCase()][reason.toLowerCase()] ||= 0
+        @storage.reasons[user.toLowerCase()][reason.toLowerCase()]++
 
       @saveUser(user, from, room, reason)
     else
@@ -54,12 +54,12 @@ class ScoreKeeper
   subtract: (user, from, room, reason) ->
     if @validate(user, from)
       user = @getUser(user)
-      @storage.scores[user]--
-      @storage.reasons[user] ||= {}
+      @storage.scores[user.toLowerCase()]--
+      @storage.reasons[user.toLowerCase()] ||= {}
 
       if reason
-        @storage.reasons[user][reason] ||= 0
-        @storage.reasons[user][reason]--
+        @storage.reasons[user.toLowerCase()][reason.toLowerCase()] ||= 0
+        @storage.reasons[user.toLowerCase()][reason.toLowerCase()]--
 
       @saveUser(user, from, room, reason)
     else
@@ -69,23 +69,23 @@ class ScoreKeeper
     user = @getUser(user)
 
     if reason
-      delete @storage.reasons[user][reason]
+      delete @storage.reasons[user.toLowerCase()][reason.toLowerCase()]
       @saveUser(user, from.name, room)
       return true
     else
-      delete @storage.scores[user]
-      delete @storage.reasons[user]
+      delete @storage.scores[user.toLowerCase()]
+      delete @storage.reasons[user.toLowerCase()]
       return true
 
     false
 
   scoreForUser: (user) ->
     user = @getUser(user)
-    @storage.scores[user]
+    @storage.scores[user.toLowerCase()]
 
   reasonsForUser: (user) ->
     user = @getUser(user)
-    @storage.reasons[user]
+    @storage.reasons[user.toLowerCase()]
 
   saveScoreLog: (user, from, room, reason) ->
     unless typeof @storage.log[from] == "object"

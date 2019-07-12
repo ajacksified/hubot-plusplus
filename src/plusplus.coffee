@@ -30,7 +30,6 @@
 # Author:
 #   ajacksified
 
-
 _ = require('underscore')
 clark = require('clark')
 querystring = require('querystring')
@@ -58,19 +57,19 @@ module.exports = (robot) ->
   ///i, (msg) ->
     # let's get our local vars in place
     [dummy, name, operator, reason] = msg.match
-    from = msg.message.user.name.toLowerCase()
+    from = msg.message.user.name
     room = msg.message.room
 
     # do some sanitizing
-    reason = reason?.trim().toLowerCase()
+    reason = reason?.trim()
 
     if name
       if name.charAt(0) == ':'
-        name = (name.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
+        name = (name.replace /(^\s*@)|([,\s]*$)/g, '').trim()
       else
-        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
+        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '').trim()
 
-    # check whether a name was specified. use MRU if not
+    # check whether a name was specified. use most recent if not
     unless name? && name != ''
       [name, lastReason] = scoreKeeper.last(room)
       reason = lastReason if !reason? && lastReason?
