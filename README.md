@@ -4,6 +4,8 @@ hubot-plusplus
 Give (or take away) points from people and things, all from the comfort of your
 personal Hubot.
 
+Note: don't make changes here; make changes to [the official repository](https://github.com/hubot-scripts/hubot-plusplus) instead.
+
 API
 ---
 
@@ -12,7 +14,9 @@ API
 * `thing++ for stuff` - keep track of why you gave thing points
 * `thing--` - remove a point from `thing`
 * `--` - remove a point from the most previously voted-on thing
-* `thing-- for stuff` - keep track of why you gave thing points
+* `thing-- for stuff` - keep track of why you removed thing points
+* `hubot erase thing` - erase thing from scoreboard (permanently deletes thing from memory)
+* `hubot erase thing for reason` erase given reason from thing's score board (does not deduct from total score)
 * `hubot top 10` - show the top 10, with a graph of points
 * `hubot score thing` - check the score for and reasons for `thing`
 
@@ -42,3 +46,11 @@ To enable the script, add a `hubot-plusplus` entry to the `external-scripts.json
 file (you may need to create this file).
 
     ["hubot-plusplus"]
+
+## Configuration
+
+Some of the behavior of this plugin is configured in the environment:
+
+`HUBOT_PLUSPLUS_KEYWORD` - alters the word you use to ask for the points, default `score`.
+`HUBOT_PLUSPLUS_REASONS` - the text used for the word "reasons" when hubot lists the top-N report, default `raisins`.
+

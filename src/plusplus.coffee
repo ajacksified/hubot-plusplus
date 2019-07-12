@@ -6,14 +6,26 @@
 #   "clark": "0.0.6"
 #
 # Configuration:
+#   HUBOT_PLUSPLUS_KEYWORD: the keyword that will make hubot give the
+#   score for a name and the reasons. For example you can set this to
+#   "score|karma" so hubot will answer to both keywords.
+#   If not provided will default to 'score'.
+#
+#   HUBOT_PLUSPLUS_REASON_CONJUNCTIONS: a pipe separated list of conjuntions to
+#   be used when specifying reasons. The default value is
+#   "for|because|cause|cuz|as", so it can be used like:
+#   "foo++ for being awesome" or "foo++ cuz they are awesome".
 #
 # Commands:
-#   <name>++
-#   <name>--
-#   hubot score <name>
-#   hubot top <amount>
-#   hubot bottom <amount>
-#   GET http://<url>/hubot/scores[?name=<name>][&direction=<top|botton>][&limit=<10>]
+#   <name>++ [<reason>] - Increment score for a name (for a reason)
+#   <name>-- [<reason>] - Decrement score for a name (for a reason)
+#   hubot score <name> - Display the score for a name and some of the reasons
+#   hubot top <amount> - Display the top scoring <amount>
+#   hubot bottom <amount> - Display the bottom scoring <amount>
+#   hubot erase <name> [<reason>] - Remove the score for a name (for a reason)
+#
+# URLs:
+#   /hubot/scores[?name=<name>][&direction=<top|botton>][&limit=<10>]
 #
 # Author:
 #   ajacksified
@@ -26,30 +38,41 @@ ScoreKeeper = require('./scorekeeper')
 
 module.exports = (robot) ->
   scoreKeeper = new ScoreKeeper(robot)
+  scoreKeyword   = process.env.HUBOT_PLUSPLUS_KEYWORD or 'score'
+  reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS or 'raisins'
+  reasonConjunctions = process.env.HUBOT_PLUSPLUS_CONJUNCTIONS or 'for|because|cause|cuz|as'
 
   # sweet regex bro
   robot.hear ///
-    # from beginning of line, any contiguous block of word characters, including
-    # apostrophes (entire block is optional)
-    ^([\w\S']+)?
-    # any contiguous block of word phrases (optional)
-    (?:[\W\s]*)?
-    ([-+]{2}|—) # the increment/decrement operator (++ or --)
-    (?: (?:for|because|cause|cuz) (.+))? # optional reason for the plusplus
+    # from beginning of line
+    ^
+    # the thing being upvoted, which is any number of words and spaces
+    ([\s\w'@.\-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]*)
+    # allow for spaces after the thing being upvoted (@user ++)
+    \s*
+    # the increment/decrement operator ++ or --
+    (\+\+|--|—)
+    # optional reason for the plusplus
+    (?:\s+(?:#{reasonConjunctions})\s+(.+))?
     $ # end of line
   ///i, (msg) ->
     # let's get our local vars in place
-    [__, name, operator, reason] = msg.match
+    [dummy, name, operator, reason] = msg.match
     from = msg.message.user.name.toLowerCase()
     room = msg.message.room
 
     # do some sanitizing
     reason = reason?.trim().toLowerCase()
-    name = name?.trim().toLowerCase()
+
+    if name
+      if name.charAt(0) == ':'
+        name = (name.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
+      else
+        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
 
     # check whether a name was specified. use MRU if not
-    unless name?
-      [name, lastReason] = scoreKeeper.mostRecentlyUpdated(room)
+    unless name? && name != ''
+      [name, lastReason] = scoreKeeper.last(room)
       reason = lastReason if !reason? && lastReason?
 
     # do the {up, down}vote, and figure out what the new score is
@@ -61,26 +84,81 @@ module.exports = (robot) ->
     # if we got a score, then display all the things and fire off events!
     if score?
       message = if reason?
-                  "#{name} has #{score} points, #{reasonScore} of which are for #{reason}."
+                  if reasonScore == 1 or reasonScore == -1
+                    if score == 1 or score == -1
+                      "#{name} has #{score} point for #{reason}."
+                    else
+                      "#{name} has #{score} points, #{reasonScore} of which is for #{reason}."
+                  else
+                    "#{name} has #{score} points, #{reasonScore} of which are for #{reason}."
                 else
-                  "#{name} has #{score} points"
+                  if score == 1
+                    "#{name} has #{score} point"
+                  else
+                    "#{name} has #{score} points"
+
 
       msg.send message
 
       robot.emit "plus-one", {
-        name: name
+        name:      name
         direction: operator
-        room: room
-        reason: reason
+        room:      room
+        reason:    reason
+        from:      from
       }
 
-  robot.respond /score (for\s)?(.*)/i, (msg) ->
+  robot.respond ///
+    (?:erase )
+    # thing to be erased
+    ([\s\w'@.-:\u3040-\u30FF\uFF01-\uFF60\u4E00-\u9FA0]*)
+    # optionally erase a reason from thing
+    (?:\s+(?:for|because|cause|cuz)\s+(.+))?
+    $ # eol
+  ///i, (msg) ->
+    [__, name, reason] = msg.match
+    from = msg.message.user.name.toLowerCase()
+    user = msg.envelope.user
+    room = msg.message.room
+    reason = reason?.trim().toLowerCase()
+
+    if name
+      if name.charAt(0) == ':'
+        name = (name.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
+      else
+        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
+
+    isAdmin = @robot.auth?.hasRole(user, 'plusplus-admin') or @robot.auth?.hasRole(user, 'admin')
+
+    if not @robot.auth? or isAdmin
+      erased = scoreKeeper.erase(name, from, room, reason)
+    else
+      return msg.reply "Sorry, you don't have authorization to do that."
+
+    if erased?
+      message = if reason?
+                  "Erased the following reason from #{name}: #{reason}"
+                else
+                  "Erased points for #{name}"
+      msg.send message
+
+  # Catch the message asking for the score.
+  robot.respond new RegExp("(?:" + scoreKeyword + ") (for\s)?(.*)", "i"), (msg) ->
     name = msg.match[2].trim().toLowerCase()
+
+    if name
+      if name.charAt(0) == ':'
+        name = (name.replace /(^\s*@)|([,\s]*$)/g, '')
+      else
+        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '')
+
+    console.log(name)
+
     score = scoreKeeper.scoreForUser(name)
     reasons = scoreKeeper.reasonsForUser(name)
 
     reasonString = if typeof reasons == 'object' && Object.keys(reasons).length > 0
-                     "#{name} has #{score} points. here are some raisins:" +
+                     "#{name} has #{score} points. Here are some #{reasonsKeyword}:" +
                      _.reduce(reasons, (memo, val, key) ->
                        memo += "\n#{key}: #{val} points"
                      , "")
@@ -95,8 +173,11 @@ module.exports = (robot) ->
 
     tops = scoreKeeper[msg.match[1]](amount)
 
-    for i in [0..tops.length-1]
-      message.push("#{i+1}. #{tops[i].name} : #{tops[i].score}")
+    if tops.length > 0
+      for i in [0..tops.length-1]
+        message.push("#{i+1}. #{tops[i].name} : #{tops[i].score}")
+    else
+      message.push("No scores to keep track of yet!")
 
     if(msg.match[1] == "top")
       graphSize = Math.min(tops.length, Math.min(amount, 20))
@@ -104,7 +185,7 @@ module.exports = (robot) ->
 
     msg.send message.join("\n")
 
-  robot.router.get "/hubot/normalize-points", (req, res) ->
+  robot.router.get "/#{robot.name}/normalize-points", (req, res) ->
     scoreKeeper.normalize((score) ->
       if score > 0
         score = score - Math.ceil(score / 10)
@@ -116,7 +197,7 @@ module.exports = (robot) ->
 
     res.end JSON.stringify('done')
 
-  robot.router.get "/hubot/scores", (req, res) ->
+  robot.router.get "/#{robot.name}/scores", (req, res) ->
     query = querystring.parse(req._parsedUrl.query)
 
     if query.name
@@ -129,4 +210,4 @@ module.exports = (robot) ->
 
       tops = scoreKeeper[direction](amount)
 
-      res.end JSON.stringify(tops)
+      res.end JSON.stringify(tops, null, 2)
