@@ -56,55 +56,55 @@ module.exports = (robot) ->
     $ # end of line
   ///i, (msg) ->
     # let's get our local vars in place
-    [dummy, name, operator, reason] = msg.match
-    from = msg.message.user.name
+    [dummy, recipient, operator, reason] = msg.match
+    sender = msg.message.user.name
     room = msg.message.room
 
     # do some sanitizing
     reason = reason?.trim()
 
-    if name
-      if name.charAt(0) == ':'
-        name = (name.replace /(^\s*@)|([,\s]*$)/g, '').trim()
+    if recipient
+      if recipient.charAt(0) == ':'
+        recipient = (recipient.replace /(^\s*@)|([,\s]*$)/g, '').trim()
       else
-        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '').trim()
+        recipient = (recipient.replace /(^\s*@)|([,:\s]*$)/g, '').trim()
 
-    # check whether a name was specified. use most recent if not
-    unless name? && name != ''
-      [name, lastReason] = scoreKeeper.last(room)
+    # check whether a recipient was specified. use most recent if not
+    unless recipient? && recipient != ''
+      [recipient, lastReason] = scoreKeeper.last(room)
       reason = lastReason if !reason? && lastReason?
 
     # do the {up, down}vote, and figure out what the new score is
     [score, reasonScore] = if operator == "++"
-              scoreKeeper.add(name, from, room, reason)
+              scoreKeeper.add(recipient, sender, room, reason)
             else
-              scoreKeeper.subtract(name, from, room, reason)
+              scoreKeeper.subtract(recipient, sender, room, reason)
 
     # if we got a score, then display all the things and fire off events!
     if score?
       message = if reason?
                   if reasonScore == 1 or reasonScore == -1
                     if score == 1 or score == -1
-                      "#{name} has #{score} point for #{reason}."
+                      "#{recipient} has #{score} point for #{reason}."
                     else
-                      "#{name} has #{score} points, #{reasonScore} of which is for #{reason}."
+                      "#{recipient} has #{score} points, #{reasonScore} of which is for #{reason}."
                   else
-                    "#{name} has #{score} points, #{reasonScore} of which are for #{reason}."
+                    "#{recipient} has #{score} points, #{reasonScore} of which are for #{reason}."
                 else
                   if score == 1
-                    "#{name} has #{score} point"
+                    "#{recipient} has #{score} point"
                   else
-                    "#{name} has #{score} points"
+                    "#{recipient} has #{score} points"
 
 
       msg.send message
 
       robot.emit "plus-one", {
-        name:      name
+        name:      recipient
         direction: operator
         room:      room
         reason:    reason
-        from:      from
+        from:      sender
       }
 
   robot.respond ///
@@ -115,54 +115,54 @@ module.exports = (robot) ->
     (?:\s+(?:for|because|cause|cuz)\s+(.+))?
     $ # eol
   ///i, (msg) ->
-    [__, name, reason] = msg.match
-    from = msg.message.user.name.toLowerCase()
+    [__, recipient, reason] = msg.match
+    sender = msg.message.user.name.toLowerCase()
     user = msg.envelope.user
     room = msg.message.room
     reason = reason?.trim().toLowerCase()
 
-    if name
-      if name.charAt(0) == ':'
-        name = (name.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
+    if recipient
+      if recipient.charAt(0) == ':'
+        recipient = (recipient.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
       else
-        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
+        recipient = (recipient.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
 
     isAdmin = @robot.auth?.hasRole(user, 'plusplus-admin') or @robot.auth?.hasRole(user, 'admin')
 
     if not @robot.auth? or isAdmin
-      erased = scoreKeeper.erase(name, from, room, reason)
+      erased = scoreKeeper.erase(recipient, sender, room, reason)
     else
       return msg.reply "Sorry, you don't have authorization to do that."
 
     if erased?
       message = if reason?
-                  "Erased the following reason from #{name}: #{reason}"
+                  "Erased the following reason from #{recipient}: #{reason}"
                 else
-                  "Erased points for #{name}"
+                  "Erased points for #{recipient}"
       msg.send message
 
   # Catch the message asking for the score.
   robot.respond new RegExp("(?:" + scoreKeyword + ") (for\s)?(.*)", "i"), (msg) ->
-    name = msg.match[2].trim().toLowerCase()
+    recipient = msg.match[2].trim().toLowerCase()
 
-    if name
-      if name.charAt(0) == ':'
-        name = (name.replace /(^\s*@)|([,\s]*$)/g, '')
+    if recipient
+      if recipient.charAt(0) == ':'
+        recipient = (recipient.replace /(^\s*@)|([,\s]*$)/g, '')
       else
-        name = (name.replace /(^\s*@)|([,:\s]*$)/g, '')
+        recipient = (recipient.replace /(^\s*@)|([,:\s]*$)/g, '')
 
-    console.log(name)
+    console.log(recipient)
 
-    score = scoreKeeper.scoreForUser(name)
-    reasons = scoreKeeper.reasonsForUser(name)
+    score = scoreKeeper.scoreForUser(recipient)
+    reasons = scoreKeeper.reasonsForUser(recipient)
 
     reasonString = if typeof reasons == 'object' && Object.keys(reasons).length > 0
-                     "#{name} has #{score} points. Here are some #{reasonsKeyword}:" +
+                     "#{recipient} has #{score} points. Here are some #{reasonsKeyword}:" +
                      _.reduce(reasons, (memo, val, key) ->
                        memo += "\n#{key}: #{val} points"
                      , "")
                    else
-                     "#{name} has #{score} points."
+                     "#{recipient} has #{score} points."
 
     msg.send reasonString
 

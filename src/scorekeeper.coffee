@@ -26,99 +26,99 @@ class ScoreKeeper
     storageLoaded() # just in case storage was loaded before we got here
 
 
-  getUser: (user) ->
-    @storage.scores[user.toLowerCase()] ||= 0
-    @storage.reasons[user.toLowerCase()] ||= {}
-    user
+  getRecipient: (recipient) ->
+    @storage.scores[recipient.toLowerCase()] ||= 0
+    @storage.reasons[recipient.toLowerCase()] ||= {}
+    recipient
 
-  saveUser: (user, from, room, reason) ->
-    @saveScoreLog(user, from, room, reason)
+  saveRecipient: (recipient, sender, room, reason) ->
+    @saveScoreLog(recipient, sender, room, reason)
     @robot.brain.save()
 
-    [@storage.scores[user.toLowerCase()], @storage.reasons[user.toLowerCase()][reason?.toLowerCase()] || "none"]
+    [@storage.scores[recipient.toLowerCase()], @storage.reasons[recipient.toLowerCase()][reason?.toLowerCase()] || "none"]
 
-  add: (user, from, room, reason) ->
-    if @validate(user, from)
-      user = @getUser(user)
-      @storage.scores[user.toLowerCase()]++
-      @storage.reasons[user.toLowerCase()] ||= {}
+  add: (recipient, sender, room, reason) ->
+    if @validate(recipient, sender)
+      recipient = @getRecipient(recipient)
+      @storage.scores[recipient.toLowerCase()]++
+      @storage.reasons[recipient.toLowerCase()] ||= {}
 
       if reason
-        @storage.reasons[user.toLowerCase()][reason.toLowerCase()] ||= 0
-        @storage.reasons[user.toLowerCase()][reason.toLowerCase()]++
+        @storage.reasons[recipient.toLowerCase()][reason.toLowerCase()] ||= 0
+        @storage.reasons[recipient.toLowerCase()][reason.toLowerCase()]++
 
-      @saveUser(user, from, room, reason)
+      @saveRecipient(recipient, sender, room, reason)
     else
       [null, null]
 
-  subtract: (user, from, room, reason) ->
-    if @validate(user, from)
-      user = @getUser(user)
-      @storage.scores[user.toLowerCase()]--
-      @storage.reasons[user.toLowerCase()] ||= {}
+  subtract: (recipient, sender, room, reason) ->
+    if @validate(recipient, sender)
+      recipient = @getRecipient(recipient)
+      @storage.scores[recipient.toLowerCase()]--
+      @storage.reasons[recipient.toLowerCase()] ||= {}
 
       if reason
-        @storage.reasons[user.toLowerCase()][reason.toLowerCase()] ||= 0
-        @storage.reasons[user.toLowerCase()][reason.toLowerCase()]--
+        @storage.reasons[recipient.toLowerCase()][reason.toLowerCase()] ||= 0
+        @storage.reasons[recipient.toLowerCase()][reason.toLowerCase()]--
 
-      @saveUser(user, from, room, reason)
+      @saveRecipient(recipient, sender, room, reason)
     else
       [null, null]
 
-  erase: (user, from, room, reason) ->
-    user = @getUser(user)
+  erase: (recipient, sender, room, reason) ->
+    recipient = @getRecipient(recipient)
 
     if reason
-      delete @storage.reasons[user.toLowerCase()][reason.toLowerCase()]
-      @saveUser(user, from.name, room)
+      delete @storage.reasons[recipient.toLowerCase()][reason.toLowerCase()]
+      @saveRecipient(recipient, sender.name, room)
       return true
     else
-      delete @storage.scores[user.toLowerCase()]
-      delete @storage.reasons[user.toLowerCase()]
+      delete @storage.scores[recipient.toLowerCase()]
+      delete @storage.reasons[recipient.toLowerCase()]
       return true
 
     false
 
-  scoreForUser: (user) ->
-    user = @getUser(user)
-    @storage.scores[user.toLowerCase()]
+  scoreForUser: (recipient) ->
+    recipient = @getRecipient(recipient)
+    @storage.scores[recipient.toLowerCase()]
 
-  reasonsForUser: (user) ->
-    user = @getUser(user)
-    @storage.reasons[user.toLowerCase()]
+  reasonsForUser: (recipient) ->
+    recipient = @getRecipient(recipient)
+    @storage.reasons[recipient.toLowerCase()]
 
-  saveScoreLog: (user, from, room, reason) ->
-    unless typeof @storage.log[from] == "object"
-      @storage.log[from] = {}
+  saveScoreLog: (recipient, sender, room, reason) ->
+    unless typeof @storage.log[sender] == "object"
+      @storage.log[sender] = {}
 
-    @storage.log[from][user] = new Date()
-    @storage.last[room] = {user: user, reason: reason}
+    @storage.log[sender][recipient] = new Date()
+    @storage.last[room] = {recipient: recipient, reason: reason}
 
   last: (room) ->
     last = @storage.last[room]
     if typeof last == 'string'
       [last, '']
     else
-      [last.user, last.reason]
+      [last.recipient, last.reason]
 
-  isSpam: (user, from) ->
-    @storage.log[from] ||= {}
+  isSpam: (recipient, sender) ->
+    @storage.log[sender] ||= {}
 
-    if !@storage.log[from][user]
+    if !@storage.log[sender][recipient]
       return false
 
-    dateSubmitted = @storage.log[from][user]
+    dateSubmitted = @storage.log[sender][recipient]
 
     date = new Date(dateSubmitted)
     messageIsSpam = date.setSeconds(date.getSeconds() + 5) > new Date()
 
     if !messageIsSpam
-      delete @storage.log[from][user] #clean it up
+      delete @storage.log[sender][recipient] #clean it up
 
     messageIsSpam
 
-  validate: (user, from) ->
-    user != from && user != "" && !@isSpam(user, from)
+  validate: (recipient, sender) ->
+    recipient != sender && recipient != "" && !@isSpam(recipient, sender)
 
   length: () ->
     @storage.log.length
