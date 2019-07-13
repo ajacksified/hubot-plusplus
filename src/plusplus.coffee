@@ -111,11 +111,11 @@ module.exports = (robot) ->
       message = if reason?
                   if reasonScore == 1 or reasonScore == -1
                     if score == 1 or score == -1
-                      "#{recipient} has #{score} point for #{reason}."
+                      "#{recipient} has #{score} point for #{reason}"
                     else
-                      "#{recipient} has #{score} points, #{reasonScore} of which is for #{reason}."
+                      "#{recipient} has #{score} points, #{reasonScore} of which is for #{reason}"
                   else
-                    "#{recipient} has #{score} points, #{reasonScore} of which are for #{reason}."
+                    "#{recipient} has #{score} points, #{reasonScore} of which are for #{reason}"
                 else
                   if score == 1
                     "#{recipient} has #{score} point"
