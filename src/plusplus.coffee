@@ -41,6 +41,17 @@ module.exports = (robot) ->
   reasonsKeyword = process.env.HUBOT_PLUSPLUS_REASONS or 'raisins'
   reasonConjunctions = process.env.HUBOT_PLUSPLUS_CONJUNCTIONS or 'for|because|cause|cuz|as'
 
+  # set _only_ the roles you want protected with hubot-auth roles
+  # you probably don't want most of these, but they're available just in case
+  roles = {
+    add: process.env.HUBOT_PLUSPLUS_ROLE_ADD
+    subtract: process.env.HUBOT_PLUSPLUS_ROLE_SUBTRACT
+    score: process.env.HUBOT_PLUSPLUS_ROLE_SCORE
+    top: process.env.HUBOT_PLUSPLUS_ROLE_TOP
+    bottom: process.env.HUBOT_PLUSPLUS_ROLE_BOTTOM
+    erase: process.env.HUBOT_PLUSPLUS_ROLE_ERASE
+  }
+
   # sweet regex bro
   robot.hear ///
     # from beginning of line
@@ -58,7 +69,22 @@ module.exports = (robot) ->
     # let's get our local vars in place
     [dummy, recipient, operator, reason] = msg.match
     sender = msg.message.user.name
+    user = msg.envelope.user
     room = msg.message.room
+
+    operation = if operator == "++"
+                  "add"
+                else
+                  "subtract"
+
+    canModify = if @robot.auth?
+                  if roles[operation]?
+                    @robot.auth.hasRole(user, roles[operation])
+                  else true
+                else true
+
+    unless canModify
+      return
 
     # do some sanitizing
     reason = reason?.trim()
@@ -121,18 +147,24 @@ module.exports = (robot) ->
     room = msg.message.room
     reason = reason?.trim().toLowerCase()
 
+    canErase =
+      if @robot.auth?
+        if roles.erase?
+          @robot.auth.hasRole(user, roles.erase)
+        else true
+      else true
+    console.log(canErase, 'canErase')
+
+    unless canErase
+      return msg.reply "Sorry, you don't have authorization to do that."
+
     if recipient
       if recipient.charAt(0) == ':'
         recipient = (recipient.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
       else
         recipient = (recipient.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
 
-    isAdmin = @robot.auth?.hasRole(user, 'plusplus-admin') or @robot.auth?.hasRole(user, 'admin')
-
-    if not @robot.auth? or isAdmin
-      erased = scoreKeeper.erase(recipient, sender, room, reason)
-    else
-      return msg.reply "Sorry, you don't have authorization to do that."
+    erased = scoreKeeper.erase(recipient, sender, room, reason)
 
     if erased?
       message = if reason?
@@ -144,6 +176,18 @@ module.exports = (robot) ->
   # Catch the message asking for the score.
   robot.respond new RegExp("(?:" + scoreKeyword + ") (for\s)?(.*)", "i"), (msg) ->
     recipient = msg.match[2].trim().toLowerCase()
+    user = msg.envelope.user
+
+    canScore =
+      if @robot.auth?
+        if roles.score?
+          @robot.auth.hasRole(user, roles.score)
+        else true
+      else true
+    console.log('canscore', canScore)
+
+    unless canScore
+      return
 
     if recipient
       if recipient.charAt(0) == ':'
@@ -151,26 +195,34 @@ module.exports = (robot) ->
       else
         recipient = (recipient.replace /(^\s*@)|([,:\s]*$)/g, '')
 
-    console.log(recipient)
-
     score = scoreKeeper.scoreForUser(recipient)
     reasons = scoreKeeper.reasonsForUser(recipient)
 
-    reasonString = if typeof reasons == 'object' && Object.keys(reasons).length > 0
-                     "#{recipient} has #{score} points. Here are some #{reasonsKeyword}:" +
-                     _.reduce(reasons, (memo, val, key) ->
-                       memo += "\n#{key}: #{val} points"
-                     , "")
-                   else
-                     "#{recipient} has #{score} points."
+    reasonString =
+      if typeof reasons == 'object' && Object.keys(reasons).length > 0
+        "#{recipient} has #{score} points. Here are some #{reasonsKeyword}:" +
+          _.reduce(reasons, (memo, val, key) ->
+            memo += "\n#{key}: #{val} points"
+          , "")
+      else
+        "#{recipient} has #{score} points."
 
     msg.send reasonString
 
   robot.respond /(top|bottom) (\d+)/i, (msg) ->
     amount = parseInt(msg.match[2]) || 10
+    direction = msg.match[1]
+    user = msg.envelope.user
     message = []
 
-    tops = scoreKeeper[msg.match[1]](amount)
+    canScoreboard =
+      if @robot.auth?
+        if roles[direction]?
+          @robot.auth.hasRole(user, roles[direction])
+        else true
+      else true
+
+    tops = scoreKeeper[direction](amount)
 
     if tops.length > 0
       for i in [0..tops.length-1]
