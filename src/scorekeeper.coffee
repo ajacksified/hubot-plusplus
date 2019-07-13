@@ -25,7 +25,6 @@ class ScoreKeeper
     @robot.brain.on "loaded", storageLoaded
     storageLoaded() # just in case storage was loaded before we got here
 
-
   getRecipient: (recipient) ->
     @storage.scores[recipient.toLowerCase()] ||= 0
     @storage.reasons[recipient.toLowerCase()] ||= {}

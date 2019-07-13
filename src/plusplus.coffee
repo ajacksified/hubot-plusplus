@@ -230,7 +230,7 @@ module.exports = (robot) ->
     else
       message.push("No scores to keep track of yet!")
 
-    if(msg.match[1] == "top")
+    if msg.match[1] == "top"
       graphSize = Math.min(tops.length, Math.min(amount, 20))
       message.splice(0, 0, clark(_.first(_.pluck(tops, "score"), graphSize)))
 
