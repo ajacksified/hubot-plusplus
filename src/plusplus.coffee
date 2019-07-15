@@ -68,8 +68,8 @@ module.exports = (robot) ->
   ///i, (msg) ->
     # let's get our local vars in place
     [dummy, recipient, operator, reason] = msg.match
-    sender = msg.message.user.name
     user = msg.envelope.user
+    sender = user.name
     room = msg.message.room
 
     operation = if operator == "++"
@@ -97,7 +97,8 @@ module.exports = (robot) ->
 
     # check whether a recipient was specified. use most recent if not
     unless recipient? && recipient != ''
-      [recipient, lastReason] = scoreKeeper.last(room)
+      last = scoreKeeper.last(room)
+      [recipient, lastReason] = last if last
       reason = lastReason if !reason? && lastReason?
 
     # do the {up, down}vote, and figure out what the new score is
@@ -142,10 +143,10 @@ module.exports = (robot) ->
     $ # eol
   ///i, (msg) ->
     [__, recipient, reason] = msg.match
-    sender = msg.message.user.name.toLowerCase()
     user = msg.envelope.user
+    sender = user.name
     room = msg.message.room
-    reason = reason?.trim().toLowerCase()
+    reason = reason?.trim()
 
     canErase =
       if @robot.auth?
@@ -160,9 +161,9 @@ module.exports = (robot) ->
 
     if recipient
       if recipient.charAt(0) == ':'
-        recipient = (recipient.replace /(^\s*@)|([,\s]*$)/g, '').trim().toLowerCase()
+        recipient = (recipient.replace /(^\s*@)|([,\s]*$)/g, '').trim()
       else
-        recipient = (recipient.replace /(^\s*@)|([,:\s]*$)/g, '').trim().toLowerCase()
+        recipient = (recipient.replace /(^\s*@)|([,:\s]*$)/g, '').trim()
 
     erased = scoreKeeper.erase(recipient, sender, room, reason)
 
@@ -175,7 +176,7 @@ module.exports = (robot) ->
 
   # Catch the message asking for the score.
   robot.respond new RegExp("(?:" + scoreKeyword + ") (for\s)?(.*)", "i"), (msg) ->
-    recipient = msg.match[2].trim().toLowerCase()
+    recipient = msg.match[2].trim()
     user = msg.envelope.user
 
     canScore =
