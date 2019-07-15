@@ -1,5 +1,5 @@
 {
-  "name": "hubot-plusplus",
+  "name": "@therealklanni/hubot-plusplus",
   "version": "1.4.0",
   "description": "A hubot script for adding or removing points",
   "main": "index.coffee",
